@@ -6,9 +6,6 @@ namespace cs_project
     class Program
     {
 
-
-
-
         static void Main(string[] args)
         {
             ShapesManagment shapes = new ShapesManagment();
