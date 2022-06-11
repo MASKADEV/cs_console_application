@@ -6,11 +6,25 @@ namespace cs_project
 {
     public class ShapesManagment
     {
+        private SqlConnection sqlConnection = new SqlConnection();
+
+        //Connection to DB
+        private void connectionToDB()
+        {
+            //Query to Connect
+            string sqlConnectionString = @"Server=localhost,1433;Database=db_shapes;User Id=sa;Password=123456789;MultipleActiveResultSets=True;";
+            sqlConnection = new SqlConnection(sqlConnectionString);
+
+            //open The Connection
+            sqlConnection.Open();
+        }
 
         //Menu
         public void menu()
         {
-            Console.WriteLine("----- Welcome ------");
+
+            //Menu To choose From
+            Console.WriteLine("----- Shapes Managment ------");
             Console.WriteLine("\n\n\n");
             Console.WriteLine("1 - Display All Shapes");
             Console.WriteLine("2 - Fetch a Single Shapes");
@@ -21,7 +35,17 @@ namespace cs_project
             Console.WriteLine("\n\n");
 
             Console.WriteLine("Choose : ");
-            int choice = Convert.ToInt32(Console.ReadLine());
+            var input = Console.ReadLine();
+
+            //Set a default value to choice in case user enter a non valide input
+            int choice = 10;
+
+            //check if the input is number
+            if(int.TryParse(input, out choice) && choice >= 1 && choice <= 3)
+            {
+                choice = Convert.ToInt32(input);
+            }
+
             Console.Clear();
 
             switch (choice)
@@ -42,12 +66,11 @@ namespace cs_project
                     deleteShapes();
                     break;
                 case 6:
-                    Console.WriteLine("Exit");
+                    Environment.Exit(0);
                     break;
                 default:
                     Console.WriteLine("Please Enter a valide choice from the list");
-                    Console.WriteLine("\n\n\n\n\n");
-                    Console.WriteLine("Write any key to restart");
+                    Console.WriteLine("\n\n\npress any key to restart...");
                     Console.ReadKey();
                     Console.Clear();
                     break;
@@ -58,12 +81,9 @@ namespace cs_project
         public void addShapes()
         {
             //Connection to DB
-            SqlConnection sqlConnection;
-            string sqlConnectionString = @"Server=localhost,1433;Database=db_shapes;User Id=sa;Password=123456789;MultipleActiveResultSets=True;";
-            sqlConnection = new SqlConnection(sqlConnectionString);
+            connectionToDB();
 
-            sqlConnection.Open();
-
+            //Write all the shape properties
             Console.WriteLine("Enter Width");
             float width = float.Parse(Console.ReadLine());
             Console.WriteLine("Enter Height");
@@ -91,8 +111,13 @@ namespace cs_project
             Console.WriteLine("Enter Rotation Z");
             float rotation_z = float.Parse(Console.ReadLine());
 
+            //Query String
             string insertQuery = "INSERT INTO shapes VALUES(@width, @height, @amoung_of_side, @position_x, @position_y, @position_z, @scale, @rotation_x, @rotation_y, @rotation_z)";
+
+            //Query commande
             SqlCommand insertCommand = new SqlCommand(insertQuery, sqlConnection);
+
+            //Add all the value to Query
             insertCommand.Parameters.AddWithValue("@width", width);
             insertCommand.Parameters.AddWithValue("@height", height);
             insertCommand.Parameters.AddWithValue("@amoung_of_side", amoung_of_side);
@@ -103,7 +128,13 @@ namespace cs_project
             insertCommand.Parameters.AddWithValue("@rotation_x", rotation_x);
             insertCommand.Parameters.AddWithValue("@rotation_y", rotation_y);
             insertCommand.Parameters.AddWithValue("@rotation_z", rotation_z);
+
+            //Excecute the Query
             insertCommand.ExecuteNonQuery();
+
+            //close the connection
+            sqlConnection.Close();
+
             Console.Clear();
             Console.WriteLine("Shapes has been added!");
             Console.WriteLine("\n\n\n\n");
@@ -116,13 +147,9 @@ namespace cs_project
         public void updateShapes()
         {
             //Connection to DB
-            SqlConnection sqlConnection;
-            string sqlConnectionString = @"Server=localhost,1433;Database=db_shapes;User Id=sa;Password=123456789;MultipleActiveResultSets=True;";
-            sqlConnection = new SqlConnection(sqlConnectionString);
+            connectionToDB();
 
-            sqlConnection.Open();
-
-
+            //Insert all the Shapes Information
             Console.WriteLine("Enter Shape ID");
             int id = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Enter Width");
@@ -152,9 +179,13 @@ namespace cs_project
             Console.WriteLine("Enter Rotation Z");
             float rotation_z = float.Parse(Console.ReadLine());
 
+            //Query to Update
             string updateQuery = "UPDATE shapes set width=@width, height=@height, amoung_of_side=@amoung_of_side, position_x=@position_x, position_y=@position_y, position_z=@position_z, scale=@scale, rotation_x=@rotation_x, rotation_y=@rotation_y, rotation_z=@rotation_z WHERE id=@id";
 
+            //Execute the query
             SqlCommand insertCommand = new SqlCommand(updateQuery, sqlConnection);
+
+            //Insert all the input to the commande
             insertCommand.Parameters.AddWithValue("@width", width);
             insertCommand.Parameters.AddWithValue("@height", height);
             insertCommand.Parameters.AddWithValue("@amoung_of_side", amoung_of_side);
@@ -166,7 +197,13 @@ namespace cs_project
             insertCommand.Parameters.AddWithValue("@rotation_y", rotation_y);
             insertCommand.Parameters.AddWithValue("@rotation_z", rotation_z);
             insertCommand.Parameters.AddWithValue("@id", id);
+
+            //Excecute the query
             insertCommand.ExecuteNonQuery();
+
+            //Close DB connection
+            sqlConnection.Close();
+
             Console.Clear();
             Console.WriteLine("Shapes has been Updated!");
             Console.WriteLine("\n\n\n\n");
@@ -180,19 +217,23 @@ namespace cs_project
         public void deleteShapes()
         {
             //Connection to DB
-            SqlConnection sqlConnection;
-            string sqlConnectionString = @"Server=localhost,1433;Database=db_shapes;User Id=sa;Password=123456789;MultipleActiveResultSets=True;";
-            sqlConnection = new SqlConnection(sqlConnectionString);
+            connectionToDB();
 
-            sqlConnection.Open();
-
+            //Select which ID need to be Deleted!
             Console.WriteLine("Please Enter The Shape ID you want to Delete:");
             int id = Convert.ToInt32(Console.ReadLine());
 
+            //Query String
             string deleteQuery = "DELETE shapes WHERE id=@id";
             SqlCommand sqlCommand = new SqlCommand(deleteQuery, sqlConnection);
             sqlCommand.Parameters.AddWithValue("@id", id);
+
+            //Query Excecute
             sqlCommand.ExecuteNonQuery();
+
+            //Close the Connection with DB
+            sqlConnection.Close();
+
             Console.Clear();
             Console.WriteLine("ID has Been Deleted");
             Console.WriteLine("\n\n\n\n");
@@ -206,11 +247,7 @@ namespace cs_project
         public void fetchAllShapes()
         {
             //Connection to DB
-            SqlConnection sqlConnection;
-            string sqlConnectionString = @"Server=localhost,1433;Database=db_shapes;User Id=sa;Password=123456789;MultipleActiveResultSets=True;";
-            sqlConnection = new SqlConnection(sqlConnectionString);
-
-            sqlConnection.Open();
+            connectionToDB();
 
             string fetchAllQuery = "SELECT * FROM shapes";
             SqlCommand sqlCommand = new SqlCommand(fetchAllQuery, sqlConnection);
@@ -279,17 +316,16 @@ namespace cs_project
                 Console.Clear();
             }
 
+            //Close connection with DB
+            sqlConnection.Close();
+
         }
 
         //Fetch Single Shapes
         public void fetchSingleShapes()
         {
             //Connection to DB
-            SqlConnection sqlConnection;
-            string sqlConnectionString = @"Server=localhost,1433;Database=db_shapes;User Id=sa;Password=123456789;MultipleActiveResultSets=True;";
-            sqlConnection = new SqlConnection(sqlConnectionString);
-
-            sqlConnection.Open();
+            connectionToDB();
 
             Console.Write("What Shape you want to fetch: ");
             int id = Convert.ToInt32(Console.ReadLine());
@@ -356,7 +392,8 @@ namespace cs_project
                 Console.Clear();
             }
 
-
+            //Close connection with DB
+            sqlConnection.Close();
         }
     }
 }
